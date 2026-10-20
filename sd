@@ -1,0 +1,155 @@
+import numpy as np
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
+import zipfile
+import os
+import json
+
+# 1. Создаем красивую неоновую иконку 512x512 (Pocket Powder ASMR)
+size = 512
+img = Image.new("RGBA", (size, size), (7, 5, 14, 255))
+draw = ImageDraw.Draw(img)
+
+# Градиентное радиальное свечение на фоне
+y_idx, x_idx = np.ogrid[:size, :size]
+cx, cy = size / 2, size / 2
+dist = np.sqrt((x_idx - cx)**2 + (y_idx - cy)**2)
+
+bg_arr = np.zeros((size, size, 4), dtype=np.uint8)
+norm_d = np.clip(dist / (size * 0.65), 0, 1)
+# Фиолетово-черный глубокий фон
+bg_arr[..., 0] = (38 * (1 - norm_d)**1.6 + 7).astype(np.uint8)
+bg_arr[..., 1] = (14 * (1 - norm_d)**1.8 + 5).astype(np.uint8)
+bg_arr[..., 2] = (68 * (1 - norm_d)**1.5 + 14).astype(np.uint8)
+bg_arr[..., 3] = 255
+img = Image.fromarray(bg_arr, "RGBA")
+
+# Слой для свечения (неон)
+glow_layer = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+gdraw = ImageDraw.Draw(glow_layer)
+
+# Неоновая рамка по краю иконки
+margin = 24
+gdraw.rounded_rectangle(
+    [margin, margin, size - margin, size - margin],
+    radius=96,
+    outline=(168, 85, 247, 220),
+    width=8
+)
+
+# Контур неоновых песочных часов / колбы
+top_y = 96
+bot_y = 416
+mid_y = 256
+left_x = 136
+right_x = 376
+neck_l = 236
+neck_r = 276
+
+# Внутри колбы рисуем слои неонового песка (пиксельные частицы)
+rng = np.random.default_rng(42)
+particles_layer = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+pdraw = ImageDraw.Draw(particles_layer)
+
+# Верхняя чаша (осыпающийся песок)
+for py in range(top_y + 45, mid_y - 6, 6):
+    t = (mid_y - py) / (mid_y - top_y)
+    half_w = int(20 + t * (right_x - left_x - 40) / 2)
+    # Выемка воронки по центру
+    funnel = int(18 * (1 - t))
+    for px in range(int(cx - half_w + 8), int(cx + half_w - 8), 6):
+        if abs(px - cx) < funnel and py < top_y + 70:
+            continue
+        # Цвет от бирюзового к пурпурному и золотому
+        if py < top_y + 85:
+            col = (56, 189, 248, 255) # голубой неон
+        elif py < top_y + 120:
+            col = (192, 132, 252, 255) # фиолетовый неон
+        else:
+            col = (244, 114, 182, 255) # розовый неон
+        # Легкий разброс яркости
+        jitter = int(rng.integers(-20, 25))
+        col_j = (
+             max(0, min(255, col[0] + jitter)),
+             max(0, min(255, col[1] + jitter)),
+             max(0, min(255, col[2] + jitter)),
+             255
+        )
+        pdraw.rectangle([px, py, px + 4, py + 4], fill=col_j)
+
+# Струйка падающего песка по центру
+for py in range(mid_y - 8, bot_y - 65, 6):
+    offset = int(rng.integers(-4, 5))
+    col = (251, 191, 36, 255) if (py // 6) % 2 == 0 else (244, 114, 182, 255)
+    pdraw.rectangle([int(cx) + offset - 2, py, int(cx) + offset + 2, py + 4], fill=col)
+    if rng.random() < 0.5:
+        ox = int(rng.choice([-12, -8, 8, 12]))
+        pdraw.rectangle([int(cx) + ox, py, int(cx) + ox + 4, py + 4], fill=(192, 132, 252, 230))
+
+# Нижняя чаша (насыпанный бархан неонового песка)
+for py in range(bot_y - 95, bot_y - 8, 6):
+    t = (py - mid_y) / (bot_y - mid_y)
+    max_half_w = int(20 + t * (right_x - left_x - 40) / 2)
+    # Форма горки (выше в центре)
+    mound_progress = (py - (bot_y - 95)) / 87.0
+    mound_half_w = int(mound_progress * (max_half_w + 15))
+    actual_w = min(max_half_w - 8, mound_half_w)
+    for px in range(int(cx - actual_w), int(cx + actual_w), 6):
+        dist_c = abs(px - cx) / max(1, actual_w)
+        if py > bot_y - 36:
+            col = (168, 85, 247, 255)
+        elif py > bot_y - 64:
+            col = (236, 72, 153, 255)
+        else:
+            col = (251, 191, 36, 255)
+        jitter = int(rng.integers(-20, 25))
+        col_j = (
+            max(0, min(255, col[0] + jitter)),
+            max(0, min(255, col[1] + jitter)),
+            max(0, min(255, col[2] + jitter)),
+            255
+        )
+        pdraw.rectangle([px, py, px + 4, py + 4], fill=col_j)
+
+# Взлетающие искры вокруг колбы
+spark_coords = [
+    (95, 180, (56, 189, 248, 255)),
+    (415, 165, (244, 114, 182, 255)),
+    (105, 310, (192, 132, 252, 255)),
+    (405, 330, (251, 191, 36, 255)),
+    (150, 250, (74, 222, 128, 255)),
+    (362, 260, (56, 189, 248, 255)),
+]
+for sx, sy, scol in spark_coords:
+    pdraw.rectangle([sx - 5, sy - 5, sx + 5, sy + 5], fill=scol)
+    gdraw.ellipse([sx - 10, sy - 10, sx + 10, sy + 10], fill=scol)
+
+# Рисуем стеклянные стенки песочных часов
+hourglass_lines = [
+    [(left_x, top_y), (right_x, top_y)],
+    [(left_x, bot_y), (right_x, bot_y)],
+    [(left_x + 12, top_y), (neck_l, mid_y)],
+    [(right_x - 12, top_y), (neck_r, mid_y)],
+    [(neck_l, mid_y), (left_x + 12, bot_y)],
+    [(neck_r, mid_y), (right_x - 12, bot_y)],
+]
+
+for p1, p2 in hourglass_lines:
+    gdraw.line([p1, p2], fill=(192, 132, 252, 255), width=12)
+
+# Крышки часов
+gdraw.rounded_rectangle([left_x - 10, top_y - 12, right_x + 10, top_y + 8], radius=8, fill=(216, 180, 254, 255))
+gdraw.rounded_rectangle([left_x - 10, bot_y - 8, right_x + 10, bot_y + 12], radius=8, fill=(216, 180, 254, 255))
+
+# Размываем копию для неонового свечения
+blurred_glow = glow_layer.filter(ImageFilter.GaussianBlur(radius=16))
+blurred_particles = particles_layer.filter(ImageFilter.GaussianBlur(radius=8))
+
+img = Image.alpha_composite(img, blurred_glow)
+img = Image.alpha_composite(img, blurred_particles)
+img = Image.alpha_composite(img, particles_layer)
+img = Image.alpha_composite(img, glow_layer)
+
+# Сохраняем иконки
+img.save("icon.png", "PNG")
+img.resize((192, 192), Image.Resampling.LANCZOS).save("icon-192.png", "PNG")
+print("Icons generated successfully")
