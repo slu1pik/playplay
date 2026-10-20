@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Pocket Powder ASMR — by slu1pik</title>
+<style>
+  :root {
+    --bg-dark: #07050c;
+    --panel-bg: rgba(18, 12, 30, 0.92);
+    --accent: #a855f7;
+    --accent-glow: rgba(168, 85, 247, 0.45);
+    --text-main: #f3e8ff;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--bg-dark);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text-main);
+    touch-action: none;
+    display: flex;
+    flex-direction: column;
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: var(--panel-bg);
+    border-bottom: 1px solid rgba(168, 85, 247, 0.22);
+    z-index: 10;
+    flex-shrink: 0;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .brand-title {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    background: linear-gradient(90deg, #c084fc, #f472b6, #38bdf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .tg-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(135deg, #7e22ce, #db2777);
+    padding: 5px 11px;
+    border-radius: 999px;
+    box-shadow: 0 0 14px rgba(168, 85, 247, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .tg-link:active {
+    transform: scale(0.94);
+  }
+
+  .top-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .icon-btn {
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(168, 85, 247, 0.25);
+    color: var(--text-main);
+    padding: 5px 9px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .icon-btn.active {
+    background: rgba(168, 85, 247, 0.28);
+    border-color: var(--accent);
+    box-shadow: 0 0 10px var(--accent-glow);
+  }
+
+  .icon-btn:active {
+    transform: scale(0.92);
+  }
+
+  #stage-wrap {
+    position: relative;
+    flex: 1;
+    width: 100%;
+    overflow: hidden;
+    background: radial-gradient(circle at 50% 40%, #130b24 0%, #07050c 75%);
+  }
+
+  canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+  }
+
+  #glow-canvas {
+    pointer-events: none;
+    opacity: 0.55;
+    mix-blend-mode: screen;
+    filter: blur(10px);
+  }
+
+  .hud-pill {
+    position: absolute;
+    top: 8px;
+    left: 10px;
+    background: rgba(10, 7, 18, 0.72);
+    border: 1px solid rgba(168, 85, 247, 0.25);
+    padding: 4px 9px;
+    border-radius: 8px;
+    font-size: 11px;
+    color: #c4b5fd;
+    pointer-events: none;
+  }
+
+  .presets-bar {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    display: flex;
+    gap: 5px;
+    z-index: 5;
+  }
+
+  .preset-btn {
+    background: rgba(18, 12, 30, 0.85);
+    border: 1px solid rgba(168, 85, 247, 0.35);
+    color: #e9d5ff;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .preset-btn:active {
+    transform: scale(0.93);
+    background: rgba(168, 85, 247, 0.35);
+  }
+
+  footer {
+    background: var(--panel-bg);
+    border-top: 1px solid rgba(168, 85, 247, 0.25);
+    padding: 8px 10px 12px;
+    z-index: 10;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .controls-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .slider-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    font-size: 12px;
+    color: #d8b4fe;
+  }
+
+  input[type="range"] {
+    flex: 1;
+    accent-color: var(--accent);
+    height: 5px;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  .elements-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+  }
+
+  .el-btn {
+    position: relative;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 11px;
+    padding: 7px 3px;
+    color: var(--text-main);
+    font-size: 11px;
+    font-weight: 600;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+  }
+
+  .el-btn .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    box-shadow: 0 0 8px currentColor;
+  }
+
+  .el-btn.selected {
+    background: rgba(168, 85, 247, 0.22);
+    border-color: var(--accent);
+    box-shadow: 0 0 12px var(--accent-glow);
+    transform: translateY(-1px);
+  }
+
+  .el-btn:active {
+    transform: scale(0.93);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="brand-title">POCKET POWDER</span>
+    <a href="https://t.me/PIZDRONWORLDIK" target="_blank" rel="noopener noreferrer" class="tg-link">
+      <span>⚡ TG: slu1pik</span>
+    </a>
+  </div>
+  <div class="top-actions">
+    <button id="btn-sound" class="icon-btn active">🔊 ASMR</button>
+    <button id="btn-pause" class="icon-btn">⏸️</button>
+    <button id="btn-shake" class="icon-btn">📳</button>
+    <button id="btn-clear" class="icon-btn">🗑️</button>
+  </div>
+</header>
+
+<div id="stage-wrap">
+  <canvas id="sim-canvas"></canvas>
+  <canvas id="glow-canvas"></canvas>
+
+  <div class="hud-pill" id="hud-info">Частиц: 0 | Коснись экрана для ASMR</div>
+
+  <div class="presets-bar">
+    <button class="preset-btn" data-preset="hourglass">⏳ Часы</button>
+    <button class="preset-btn" data-preset="volcano">🌋 Вулкан</button>
+    <button class="preset-btn" data-preset="reactor">🧪 Реактор</button>
+  </div>
+</div>
+
+<footer>
+  <div class="controls-row">
+    <div class="slider-group">
+      <span>Кисть: <b id="brush-val">4</b></span>
+      <input type="range" id="brush-slider" min="1" max="12" value="4">
+    </div>
+    <button id="btn-gravity" class="icon-btn active">⬇️ Гравитация</button>
+  </div>
+
+  <div class="elements-grid" id="elements-container"></div>
+</footer>
+
+<script>
+(() => {
+  const EMPTY = 0, WALL = 1, SAND = 2, PRISM = 3, WATER = 4, ACID = 5,
+        FIRE = 6, OIL = 7, GUNPOWDER = 8, LAVA = 9, WOOD = 10, CLONER = 11,
+        STEAM = 12, ERASER = 99;
+
+  const ELEMENTS = [
+    { id: SAND,      name: 'Песок',    color: '#fbbf24', desc: 'Золотой сыпучий песок' },
+    { id: PRISM,     name: 'Неон',     color: '#c084fc', desc: 'Переливающийся ASMR-песок' },
+    { id: WATER,     name: 'Вода',     color: '#38bdf8', desc: 'Охлаждает и тушит огонь' },
+    { id: ACID,      name: 'Кислота',  color: '#4ade80', desc: 'Плавит всё с шипением' },
+    { id: LAVA,      name: 'Лава',     color: '#f97316', desc: 'Густая раскаленная магма' },
+    { id: FIRE,      name: 'Огонь',    color: '#ef4444', desc: 'Плазма и искры' },
+    { id: GUNPOWDER, name: 'Порох',    color: '#a8a29e', desc: 'Взрывается от искры' },
+    { id: OIL,       name: 'Нефть',    color: '#9333ea', desc: 'Горючая вязкая жидкость' },
+    { id: WOOD,      name: 'Дерево',   color: '#b45309', desc: 'Твердое, но горит' },
+    { id: CLONER,    name: 'Клон',     color: '#f472b6', desc: 'Генерирует то, что коснется' },
+    { id: WALL,      name: 'Стена',    color: '#64748b', desc: 'Неразрушимый барьер' },
+    { id: ERASER,    name: 'Ластик',   color: '#f87171', desc: 'Стирает частицы' }
+  ];
+
+  class AsmrAudioEngine {
+    constructor() {
+      this.ctx = null;
+      this.enabled = true;
+      this.initialized = false;
+    }
+
+    init() {
+      if (this.initialized) return;
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      this.ctx = new AudioCtx();
+      this.initialized = true;
+
+      const bufferSize = this.ctx.sampleRate * 2;
+      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        b0 = 0.99886 * b0 + white * 0.0555179;
+        b1 = 0.99332 * b1 + white * 0.0750759;
+        b2 = 0.96900 * b2 + white * 0.1538520;
+        b3 = 0.86650 * b3 + white * 0.3104856;
+        b4 = 0.55000 * b4 + white * 0.5329522;
+        b5 = -0.7616 * b5 - white * 0.0168980;
+        output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.04;
+        b6 = white * 0.115926;
+      }
+
+      const makeLoopChannel = (filterType, freq, q) => {
+        const src = this.ctx.createBufferSource();
+        src.buffer = noiseBuffer;
+        src.loop = true;
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = filterType;
+        filter.frequency.value = freq;
+        filter.Q.value = q;
+        const gain = this.ctx.createGain();
+        gain.gain.value = 0;
+        src.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+        src.start();
+        return { filter, gain };
+      };
+
+      const sandCh = makeLoopChannel('bandpass', 3200, 1.8);
+      this.sandFilter = sandCh.filter;
+      this.sandGain = sandCh.gain;
+
+      const waterCh = makeLoopChannel('bandpass', 650, 2.5);
+      this.waterFilter = waterCh.filter;
+      this.waterGain = waterCh.gain;
+
+      const fireCh = makeLoopChannel('lowpass', 240, 1.0);
+      this.fireGain = fireCh.gain;
+
+      const acidCh = makeLoopChannel('bandpass', 5200, 3.0);
+      this.acidGain = acidCh.gain;
+    }
+
+    resume() {
+      if (!this.initialized) this.init();
+      if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+    }
+
+    updateFrameMetrics(sandMoved, waterMoved, fireActive, acidFizz) {
+      if (!this.initialized || !this.enabled || !this.ctx) return;
+      const now = this.ctx.currentTime;
+      this.sandGain.gain.setTargetAtTime(Math.min(0.45, Math.sqrt(sandMoved) * 0.014), now, 0.05);
+      this.waterGain.gain.setTargetAtTime(Math.min(0.35, Math.sqrt(waterMoved) * 0.012), now, 0.06);
+      this.fireGain.gain.setTargetAtTime(Math.min(0.40, Math.sqrt(fireActive) * 0.015), now, 0.07);
+      this.acidGain.gain.setTargetAtTime(Math.min(0.50, Math.sqrt(acidFizz) * 0.035), now, 0.04);
+
+      if (sandMoved > 0) this.sandFilter.frequency.setTargetAtTime(2600 + Math.random() * 1400, now, 0.04);
+      if (waterMoved > 0) {
+        this.waterFilter.frequency.setTargetAtTime(450 + Math.random() * 500, now, 0.05);
+        if (Math.random() < 0.14) this.playBubble();
+      }
+      if (sandMoved > 15 && Math.random() < 0.25) this.playGrainTick();
+    }
+
+    playGrainTick() {
+      if (!this.initialized || !this.enabled) return;
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const g = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1800 + Math.random() * 2800, now);
+      g.gain.setValueAtTime(0.018, now);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.018);
+      osc.connect(g);
+      g.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.02);
+    }
+
+    playBubble() {
+      if (!this.initialized || !this.enabled) return;
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const g = this.ctx.createGain();
+      osc.type = 'sine';
+      const startFreq = 320 + Math.random() * 350;
+      osc.frequency.setValueAtTime(startFreq, now);
+      osc.frequency.exponentialRampToValueAtTime(startFreq * 2.1, now + 0.045);
+      g.gain.setValueAtTime(0.03, now);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
+      osc.connect(g);
+      g.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.055);
+    }
+
+    playExplosion() {
+      if (!this.initialized || !this.enabled) return;
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const g = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(130, now);
+      osc.frequency.exponentialRampToValueAtTime(28, now + 0.28);
+      g.gain.setValueAtTime(0.35, now);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      osc.connect(g);
+      g.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.31);
+    }
+
+    playUiTap() {
+      this.resume();
+      if (!this.initialized || !this.enabled) return;
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const g = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(520, now);
+      osc.frequency.exponentialRampToValueAtTime(880, now + 0.03);
+      g.gain.setValueAtTime(0.06, now);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
+      osc.connect(g);
+      g.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.04);
+    }
+
+    muteAll() {
+      if (!this.initialized || !this.ctx) return;
+      const now = this.ctx.currentTime;
+      this.sandGain.gain.setTargetAtTime(0, now, 0.02);
+      this.waterGain.gain.setTargetAtTime(0, now, 0.02);
+      this.fireGain.gain.setTargetAtTime(0, now, 0.02);
+      this.acidGain.gain.setTargetAtTime(0, now, 0.02);
+    }
+  }
+
+  const audio = new AsmrAudioEngine();
+
+  function haptic(ms = 8) {
+    if (window.AndroidBridge && window.AndroidBridge.vibrate) {
+      try { window.AndroidBridge.vibrate(ms); return; } catch (e) {}
+    }
+    if (navigator.vibrate) {
+      try { navigator.vibrate(ms); } catch (e) {}
+    }
+  }
+
+  const stageWrap = document.getElementById('stage-wrap');
+  const simCanvas = document.getElementById('sim-canvas');
+  const glowCanvas = document.getElementById('glow-canvas');
+  const ctx = simCanvas.getContext('2d', { alpha: false });
+  const glowCtx = glowCanvas.getContext('2d');
+
+  const CELL_SIZE = 4;
+  let width = 0, height = 0, grid = null, colorSeed = null, cloneType = null, updated = null, imgData = null;
+  let currentElement = PRISM, brushRadius = 4, isPaused = false, gravityDir = 1, hueCycle = 0, frameCount = 0;
+
+  function initGrid() {
+    const rect = stageWrap.getBoundingClientRect();
+    width = Math.max(60, Math.floor(rect.width / CELL_SIZE));
+    height = Math.max(80, Math.floor(rect.height / CELL_SIZE));
+    simCanvas.width = width;
+    simCanvas.height = height;
+    glowCanvas.width = Math.floor(width / 2);
+    glowCanvas.height = Math.floor(height / 2);
+    const size = width * height;
+    grid = new Uint8Array(size);
+    colorSeed = new Uint8Array(size);
+    cloneType = new Uint8Array(size);
+    updated = new Uint8Array(size);
+    imgData = ctx.createImageData(width, height);
+  }
+
+  window.addEventListener('resize', () => { initGrid(); loadPreset('hourglass'); });
+
+  const elContainer = document.getElementById('elements-container');
+  ELEMENTS.forEach(el => {
+    const btn = document.createElement('button');
+    btn.className = 'el-btn' + (el.id === currentElement ? ' selected' : '');
+    btn.innerHTML = `<span class="dot" style="background:${el.color};color:${el.color}"></span><span>${el.name}</span>`;
+    btn.addEventListener('click', () => {
+      currentElement = el.id;
+      document.querySelectorAll('.el-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      document.getElementById('hud-info').textContent = `${el.name}: ${el.desc}`;
+      audio.playUiTap();
+      haptic(10);
+    });
+    elContainer.appendChild(btn);
+  });
+
+  function spawnCircle(cx, cy, radius, type) {
+    const r2 = radius * radius;
+    for (let dy = -radius; dy <= radius; dy++) {
+      for (let dx = -radius; dx <= radius; dx++) {
+        if (dx * dx + dy * dy <= r2) {
+          const x = cx + dx, y = cy + dy;
+          if (x >= 0 && x < width && y >= 0 && y < height) {
+            const idx = y * width + x;
+            if (type === ERASER) {
+              grid[idx] = EMPTY; colorSeed[idx] = 0; cloneType[idx] = 0;
+            } else if (type === WALL || type === WOOD || type === CLONER) {
+              grid[idx] = type; colorSeed[idx] = Math.floor(Math.random() * 40); cloneType[idx] = EMPTY;
+            } else if (grid[idx] === EMPTY && (radius === 1 || Math.random() < 0.78)) {
+              grid[idx] = type;
+              colorSeed[idx] = type === PRISM ? ((hueCycle + Math.floor(Math.random() * 12)) & 255) :
+                               (type === FIRE ? (45 + Math.floor(Math.random() * 40)) : Math.floor(Math.random() * 255));
+            }
+          }
+        }
+      }
+    }
+  }
+
+  function drawLine(x0, y0, x1, y1, radius, type) {
+    const dist = Math.hypot(x1 - x0, y1 - y0);
+    const steps = Math.max(1, Math.ceil(dist));
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      spawnCircle(Math.round(x0 + (x1 - x0) * t), Math.round(y0 + (y1 - y0) * t), radius, type);
+    }
+  }
+
+  const activePointers = new Map();
+  function getGridCoords(clientX, clientY) {
+    const rect = simCanvas.getBoundingClientRect();
+    return {
+      x: Math.floor(((clientX - rect.left) / rect.width) * width),
+      y: Math.floor(((clientY - rect.top) / rect.height) * height)
+    };
+  }
+
+  stageWrap.addEventListener('pointerdown', (e) => {
+    if (e.target.classList.contains('preset-btn')) return;
+    audio.resume();
+    const pos = getGridCoords(e.clientX, e.clientY);
+    activePointers.set(e.pointerId, pos);
+    spawnCircle(pos.x, pos.y, brushRadius, currentElement);
+  });
+
+  stageWrap.addEventListener('pointermove', (e) => {
+    if (!activePointers.has(e.pointerId)) return;
+    const prev = activePointers.get(e.pointerId);
+    const curr = getGridCoords(e.clientX, e.clientY);
+    drawLine(prev.x, prev.y, curr.x, curr.y, brushRadius, currentElement);
+    activePointers.set(e.pointerId, curr);
+  });
+
+  const endPointer = (e) => activePointers.delete(e.pointerId);
+  stageWrap.addEventListener('pointerup', endPointer);
+  stageWrap.addEventListener('pointercancel', endPointer);
+
+  function loadPreset(name) {
+    grid.fill(EMPTY); colorSeed.fill(0); cloneType.fill(0);
+    haptic(15);
+    const cx = Math.floor(width / 2), cy = Math.floor(height / 2);
+
+    if (name === 'hourglass') {
+      const w = Math.min(width - 16, Math.floor(width * 0.65));
+      const h = Math.floor(height * 0.72);
+      const topY = Math.floor((height - h) / 2), botY = topY + h, neck = 4;
+      for (let y = topY; y <= botY; y++) {
+        const progress = Math.abs(y - cy) / (h / 2);
+        const halfSpan = Math.max(neck, Math.floor(progress * (w / 2)));
+        drawLine(cx - halfSpan, y, cx - halfSpan - 1, y, 1, WALL);
+        drawLine(cx + halfSpan, y, cx + halfSpan + 1, y, 1, WALL);
+        if (y < cy - 4 && y > topY + 4) {
+          for (let x = cx - halfSpan + 3; x <= cx + halfSpan - 3; x++) {
+            const idx = y * width + x;
+            grid[idx] = PRISM;
+            colorSeed[idx] = ((y - topY) * 4 + (x % 9)) & 255;
+          }
+        }
+      }
+      drawLine(cx - Math.floor(w / 2), topY, cx + Math.floor(w / 2), topY, 1, WALL);
+      drawLine(cx - Math.floor(w / 2), botY, cx + Math.floor(w / 2), botY, 1, WALL);
+    } else if (name === 'volcano') {
+      const baseY = height - 6, peakY = Math.floor(height * 0.42);
+      for (let y = peakY; y <= baseY; y++) {
+        const t = (y - peakY) / (baseY - peakY);
+        const outer = Math.floor(10 + t * (width * 0.42)), inner = Math.floor(5 + t * 12);
+        for (let x = cx - outer; x <= cx + outer; x++) {
+          if (x >= 0 && x < width) {
+            const idx = y * width + x;
+            if (Math.abs(x - cx) > inner) {
+              grid[idx] = WALL; colorSeed[idx] = Math.floor(Math.random() * 40);
+            } else if (y > peakY + 12) {
+              grid[idx] = LAVA; colorSeed[idx] = Math.floor(Math.random() * 200);
+            }
+          }
+        }
+      }
+      drawLine(cx - 5, baseY - 2, cx + 5, baseY - 2, 1, CLONER);
+      for (let x = cx - 5; x <= cx + 5; x++) cloneType[(baseY - 2) * width + x] = LAVA;
+    } else if (name === 'reactor') {
+      const y1 = Math.floor(height * 0.3), y2 = Math.floor(height * 0.55), y3 = Math.floor(height * 0.78);
+      drawLine(15, y1, width - 15, y1, 2, WOOD);
+      drawLine(22, y2, width - 22, y2, 2, WOOD);
+      drawLine(12, y3, width - 12, y3, 2, WALL);
+      drawLine(12, y3 - 15, 12, y3, 2, WALL);
+      drawLine(width - 12, y3 - 15, width - 12, y3, 2, WALL);
+      spawnCircle(cx - 20, y1 - 12, 10, SAND);
+      spawnCircle(cx + 20, y1 - 12, 10, GUNPOWDER);
+      spawnCircle(cx, y2 - 12, 12, WATER);
+      spawnCircle(cx, y1 - 26, 9, ACID);
+    }
+  }
+
+  document.querySelectorAll('.preset-btn').forEach(btn => {
+    btn.addEventListener('click', () => { audio.playUiTap(); loadPreset(btn.dataset.preset); });
+  });
+
+  function swap(i1, i2) {
+    const tmpT = grid[i1], tmpC = colorSeed[i1];
+    grid[i1] = grid[i2]; colorSeed[i1] = colorSeed[i2];
+    grid[i2] = tmpT; colorSeed[i2] = tmpC;
+    updated[i1] = 1; updated[i2] = 1;
+  }
+
+  function explode(cx, cy, radius) {
+    audio.playExplosion();
+    haptic(35);
+    const r2 = radius * radius;
+    for (let dy = -radius; dy <= radius; dy++) {
+      for (let dx = -radius; dx <= radius; dx++) {
+        if (dx * dx + dy * dy <= r2) {
+          const x = cx + dx, y = cy + dy;
+          if (x >= 0 && x < width && y >= 0 && y < height) {
+            const idx = y * width + x;
+            if (grid[idx] !== WALL && grid[idx] !== CLONER) {
+              grid[idx] = Math.random() < 0.65 ? FIRE : EMPTY;
+              colorSeed[idx] = 60 + Math.floor(Math.random() * 40);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  function stepSimulation() {
+    updated.fill(0);
+    hueCycle = (hueCycle + 1) & 255;
+    let sandMoved = 0, waterMoved = 0, fireActive = 0, acidFizz = 0;
+
+    const startY = gravityDir === 1 ? height - 1 : 0;
+    const endY = gravityDir === 1 ? -1 : height;
+    const stepY = -gravityDir;
+
+    for (let y = startY; y !== endY; y += stepY) {
+      const leftToRight = (y + frameCount) & 1;
+      for (let i = 0; i < width; i++) {
+        const x = leftToRight ? i : (width - 1 - i);
+        const idx = y * width + x;
+        const type = grid[idx];
+        if (type === EMPTY || type === WALL || type === WOOD || updated[idx]) continue;
+
+        const ny = y + gravityDir;
+        const inBoundsY = ny >= 0 && ny < height;
+
+        if (type === CLONER) {
+          const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
+          for (let d = 0; d < 4; d++) {
+            const nx = x + dirs[d][0], nny = y + dirs[d][1];
+            if (nx >= 0 && nx < width && nny >= 0 && nny < height) {
+              const nIdx = nny * width + nx, nType = grid[nIdx];
+              if (cloneType[idx] === EMPTY && nType !== EMPTY && nType !== WALL && nType !== CLONER) {
+                cloneType[idx] = nType;
+              } else if (cloneType[idx] !== EMPTY && nType === EMPTY && Math.random() < 0.22) {
+                grid[nIdx] = cloneType[idx];
+                colorSeed[nIdx] = cloneType[idx] === PRISM ? hueCycle : (60 + Math.floor(Math.random() * 150));
+                updated[nIdx] = 1;
+              }
+            }
+          }
+          continue;
+        }
+
+        if (type === SAND || type === PRISM || type === GUNPOWDER) {
+          if (!inBoundsY) continue;
+          const belowIdx = ny * width + x, belowType = grid[belowIdx];
+          const canSink = (t) => t === EMPTY || t === WATER || t === OIL || t === ACID || t === STEAM;
+          if (canSink(belowType)) {
+            swap(idx, belowIdx); sandMoved++;
+          } else {
+            const dir1 = Math.random() < 0.5 ? -1 : 1, dir2 = -dir1;
+            if (x + dir1 >= 0 && x + dir1 < width && canSink(grid[ny * width + x + dir1])) {
+              swap(idx, ny * width + x + dir1); sandMoved++;
+            } else if (x + dir2 >= 0 && x + dir2 < width && canSink(grid[ny * width + x + dir2])) {
+              swap(idx, ny * width + x + dir2); sandMoved++;
+            }
+          }
+          continue;
+        }
+
+        if (type === WATER || type === OIL || type === ACID || type === LAVA) {
+          if (type === LAVA) fireActive++;
+          const checkDirs = [[0, gravityDir], [-1, 0], [1, 0], [0, -gravityDir]];
+          let reacted = false;
+          for (let d = 0; d < 4; d++) {
+            const nx = x + checkDirs[d][0], nny = y + checkDirs[d][1];
+            if (nx < 0 || nx >= width || nny < 0 || nny >= height) continue;
+            const nIdx = nny * width + nx, nType = grid[nIdx];
+            if (type === ACID && nType !== EMPTY && nType !== ACID && nType !== WALL && nType !== CLONER && nType !== STEAM) {
+              if (Math.random() < 0.18) {
+                grid[nIdx] = Math.random() < 0.4 ? STEAM : EMPTY;
+                colorSeed[nIdx] = 50; grid[idx] = EMPTY; acidFizz += 4; reacted = true; break;
+              }
+            } else if (type === LAVA) {
+              if (nType === WATER) {
+                grid[idx] = WALL; grid[nIdx] = STEAM; colorSeed[nIdx] = 70; acidFizz += 5; reacted = true; break;
+              } else if (nType === WOOD || nType === OIL) {
+                grid[nIdx] = FIRE; colorSeed[nIdx] = 80;
+              } else if (nType === GUNPOWDER) {
+                explode(nx, nny, 9); reacted = true; break;
+              }
+            } else if (type === WATER && nType === FIRE) {
+              grid[nIdx] = STEAM; colorSeed[nIdx] = 45; acidFizz += 2;
+            }
+          }
+          if (reacted) continue;
+
+          if (inBoundsY) {
+            const belowIdx = ny * width + x, belowType = grid[belowIdx];
+            if (belowType === EMPTY || belowType === STEAM || (type === WATER && belowType === OIL)) {
+              swap(idx, belowIdx); waterMoved++; continue;
+            }
+            const dir = Math.random() < 0.5 ? -1 : 1;
+            if (x + dir >= 0 && x + dir < width && grid[ny * width + x + dir] === EMPTY) {
+              swap(idx, ny * width + x + dir); waterMoved++; continue;
+            }
+          }
+
+          const spread = type === LAVA ? 1 : (type === OIL ? 3 : 5);
+          const sDir = Math.random() < 0.5 ? -1 : 1;
+          for (let step = 1; step <= spread; step++) {
+            const sx = x + sDir * step;
+            if (sx >= 0 && sx < width && grid[y * width + sx] === EMPTY) {
+              swap(idx, y * width + sx); waterMoved++; break;
+            } else break;
+          }
+          continue;
+        }
+
+        if (type === FIRE || type === STEAM) {
+          if (type === FIRE) fireActive++;
+          if (colorSeed[idx] <= 2) { grid[idx] = EMPTY; continue; }
+          colorSeed[idx] -= (type === FIRE ? 2 : 1);
+
+          if (type === FIRE) {
+            const dirs = [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,-1]];
+            for (let d = 0; d < dirs.length; d++) {
+              const nx = x + dirs[d][0], nny = y + dirs[d][1];
+              if (nx < 0 || nx >= width || nny < 0 || nny >= height) continue;
+              const nIdx = nny * width + nx, nType = grid[nIdx];
+              if (nType === OIL && Math.random() < 0.35) { grid[nIdx] = FIRE; colorSeed[nIdx] = 85; }
+              else if (nType === WOOD && Math.random() < 0.04) { grid[nIdx] = FIRE; colorSeed[nIdx] = 95; }
+              else if (nType === GUNPOWDER) { explode(nx, nny, 10); break; }
+              else if (nType === WATER) { grid[idx] = STEAM; colorSeed[idx] = 40; acidFizz++; break; }
+            }
+          }
+
+          const upY = y - gravityDir, rx = x + (Math.floor(Math.random() * 3) - 1);
+          if (upY >= 0 && upY < height && rx >= 0 && rx < width && grid[upY * width + rx] === EMPTY) {
+            swap(idx, upY * width + rx);
+          }
+        }
+      }
+    }
+    audio.updateFrameMetrics(sandMoved, waterMoved, fireActive, acidFizz);
+  }
+
+  function hslToRgb(h, s, l) {
+    s /= 100; l /= 100;
+    const k = n => (n + h / 30) % 12;
+    const a = s * Math.min(l, 1 - l);
+    const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+    return [Math.round(255 * f(0)), Math.round(255 * f(8)), Math.round(255 * f(4))];
+  }
+
+  const prismPalette = new Array(256);
+  for (let i = 0; i < 256; i++) prismPalette[i] = hslToRgb((240 + (i / 256) * 180) % 360, 92, 62);
+
+  function render() {
+    const data = imgData.data;
+    let activeCount = 0;
+    for (let i = 0, len = width * height; i < len; i++) {
+      const type = grid[i], p = i * 4;
+      if (type === EMPTY) {
+        data[p] = 7; data[p + 1] = 5; data[p + 2] = 12; data[p + 3] = 255;
+        continue;
+      }
+      activeCount++;
+      const seed = colorSeed[i];
+      switch (type) {
+        case SAND: {
+          const v = (seed & 31) - 15;
+          data[p] = Math.min(255, 245 + v); data[p + 1] = Math.min(255, 185 + v); data[p + 2] = Math.max(0, 45 + v); break;
+        }
+        case PRISM: {
+          const rgb = prismPalette[seed];
+          data[p] = rgb[0]; data[p + 1] = rgb[1]; data[p + 2] = rgb[2]; break;
+        }
+        case WATER: {
+          const shimmer = ((seed + frameCount * 2) & 31) - 15;
+          data[p] = Math.max(0, 25 + shimmer); data[p + 1] = Math.min(255, 185 + shimmer); data[p + 2] = Math.min(255, 248 + shimmer); break;
+        }
+        case ACID: {
+          const pulse = ((seed + frameCount * 4) & 31);
+          data[p] = 50 + pulse; data[p + 1] = 235; data[p + 2] = 95 + pulse; break;
+        }
+        case LAVA: {
+          const glow = ((seed + frameCount * 2) & 63);
+          data[p] = 255; data[p + 1] = 70 + glow * 2; data[p + 2] = 15; break;
+        }
+        case FIRE: {
+          data[p] = 255; data[p + 1] = Math.min(255, seed * 3); data[p + 2] = seed > 65 ? 180 : 20; break;
+        }
+        case OIL: {
+          const v = (seed & 15);
+          data[p] = 115 + v; data[p + 1] = 40 + v; data[p + 2] = 185 + v; break;
+        }
+        case GUNPOWDER: {
+          const v = (seed & 31);
+          data[p] = 130 + v; data[p + 1] = 125 + v; data[p + 2] = 140 + v; break;
+        }
+        case WOOD: {
+          const v = (seed & 15);
+          data[p] = 145 + v; data[p + 1] = 75 + v; data[p + 2] = 30 + v; break;
+        }
+        case WALL: {
+          data[p] = 85 + seed; data[p + 1] = 70 + seed; data[p + 2] = 125 + seed; break;
+        }
+        case CLONER: {
+          data[p] = 244; data[p + 1] = 114; data[p + 2] = 182; break;
+        }
+        case STEAM: {
+          data[p] = 175; data[p + 1] = 190; data[p + 2] = 215; break;
+        }
+      }
+      data[p + 3] = 255;
+    }
+    ctx.putImageData(imgData, 0, 0);
+    if ((frameCount & 1) === 0) glowCtx.drawImage(simCanvas, 0, 0, glowCanvas.width, glowCanvas.height);
+    if (frameCount % 15 === 0) {
+      const elObj = ELEMENTS.find(e => e.id === currentElement);
+      document.getElementById('hud-info').textContent = `${elObj ? elObj.name : ''} | Частиц: ${activeCount}`;
+    }
+  }
+
+  const brushSlider = document.getElementById('brush-slider');
+  const brushVal = document.getElementById('brush-val');
+  brushSlider.addEventListener('input', () => {
+    brushRadius = parseInt(brushSlider.value, 10);
+    brushVal.textContent = brushRadius;
+    haptic(4);
+  });
+
+  const btnSound = document.getElementById('btn-sound');
+  btnSound.addEventListener('click', () => {
+    audio.resume();
+    audio.enabled = !audio.enabled;
+    if (!audio.enabled) audio.muteAll();
+    btnSound.classList.toggle('active', audio.enabled);
+    btnSound.textContent = audio.enabled ? '🔊 ASMR' : '🔇 Звук';
+    haptic(10);
+  });
+
+  const btnPause = document.getElementById('btn-pause');
+  btnPause.addEventListener('click', () => {
+    isPaused = !isPaused;
+    if (isPaused) audio.muteAll();
+    btnPause.classList.toggle('active', isPaused);
+    btnPause.textContent = isPaused ? '▶️' : '⏸️';
+    audio.playUiTap();
+    haptic(10);
+  });
+
+  document.getElementById('btn-clear').addEventListener('click', () => {
+    grid.fill(EMPTY); colorSeed.fill(0); cloneType.fill(0);
+    audio.playUiTap(); haptic(20);
+  });
+
+  document.getElementById('btn-shake').addEventListener('click', () => {
+    audio.resume(); haptic(35);
+    for (let y = 1; y < height - 1; y++) {
+      for (let x = 1; x < width - 1; x++) {
+        const idx = y * width + x;
+        if (grid[idx] !== EMPTY && grid[idx] !== WALL && Math.random() < 0.45) {
+          const nx = x + (Math.floor(Math.random() * 5) - 2);
+          const ny = y + (Math.floor(Math.random() * 5) - 2);
+          if (nx >= 0 && nx < width && ny >= 0 && ny < height && grid[ny * width + nx] !== WALL) {
+            swap(idx, ny * width + nx);
+          }
+        }
+      }
+    }
+  });
+
+  const btnGravity = document.getElementById('btn-gravity');
+  btnGravity.addEventListener('click', () => {
+    gravityDir = -gravityDir;
+    btnGravity.textContent = gravityDir === 1 ? '⬇️ Гравитация' : '⬆️ Антиграв';
+    btnGravity.classList.toggle('active', gravityDir === -1);
+    audio.playUiTap(); haptic(12);
+  });
+
+  function loop() {
+    frameCount++;
+    if (!isPaused) stepSimulation();
+    render();
+    requestAnimationFrame(loop);
+  }
+
+  initGrid();
+  loadPreset('hourglass');
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
